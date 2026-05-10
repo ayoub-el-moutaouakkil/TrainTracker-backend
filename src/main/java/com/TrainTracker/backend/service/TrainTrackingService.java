@@ -45,7 +45,7 @@ public class TrainTrackingService {
                     .trainNumber(request.getTrainNumber())
                     .date(request.getDate())
                     .status(TrackingStatus.UNKNOWN)
-                    .lastUpdated(LocalDateTime.now())
+                    .lastUpdated(LocalDateTime.now(PARIS))
                     .errorMessage("Données GTFS en cours de chargement, réessaie dans quelques secondes")
                     .build();
             journeys.put(loading.getId(), loading);
@@ -60,7 +60,7 @@ public class TrainTrackingService {
                     .trainNumber(request.getTrainNumber())
                     .date(request.getDate())
                     .status(TrackingStatus.UNKNOWN)
-                    .lastUpdated(LocalDateTime.now())
+                    .lastUpdated(LocalDateTime.now(PARIS))
                     .errorMessage("Train " + request.getTrainNumber() + " introuvable le " + request.getDate())
                     .build();
             journeys.put(unknown.getId(), unknown);
@@ -78,7 +78,7 @@ public class TrainTrackingService {
                 .vehicleJourneyId(tripId)
                 .stops(stops)
                 .status(computeStatus(stops))
-                .lastUpdated(LocalDateTime.now())
+                .lastUpdated(LocalDateTime.now(PARIS))
                 .build();
 
         journeys.put(journey.getId(), journey);
@@ -112,7 +112,7 @@ public class TrainTrackingService {
 
     @Scheduled(fixedDelay = 300_000)
     public void cleanupStaleJourneys() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(PARIS);
         int before = journeys.size();
         journeys.entrySet().removeIf(e -> {
             TrackedJourney j = e.getValue();
@@ -148,7 +148,7 @@ public class TrainTrackingService {
         journey.setStops(stops);
         journey.setStatus(computeStatus(stops));
         journey.setErrorMessage(null);
-        journey.setLastUpdated(LocalDateTime.now());
+        journey.setLastUpdated(LocalDateTime.now(PARIS));
     }
 
     /**

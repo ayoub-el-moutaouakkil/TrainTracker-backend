@@ -1,7 +1,6 @@
 package com.TrainTracker.backend.controller;
 
 import com.TrainTracker.backend.dto.TrackJourneyRequest;
-import com.TrainTracker.backend.dto.TrackingResponse;
 import com.TrainTracker.backend.service.TrainTrackingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +21,6 @@ public class TrainTrackingController {
         this.trackingService = trackingService;
     }
 
-    /**
-     * Démarre le tracking d'un train.
-     * Body: { "trainNumber": "6201", "date": "2026-05-08" }
-     */
     @PostMapping
     public ResponseEntity<?> startTracking(@RequestBody TrackJourneyRequest request) {
         if (request.getTrainNumber() == null || !TRAIN_NUMBER.matcher(request.getTrainNumber()).matches())
@@ -35,9 +30,6 @@ public class TrainTrackingController {
         return ResponseEntity.ok(trackingService.startTracking(request));
     }
 
-    /**
-     * Retourne la position + ETA + retard d'un trajet spécifique.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<?> getTracking(@PathVariable String id) {
         if (!UUID_FORMAT.matcher(id).matches()) return ResponseEntity.badRequest().build();
@@ -47,17 +39,21 @@ public class TrainTrackingController {
     }
 
     @PostMapping("/{id}/refresh")
-    public ResponseEntity<?> refresh(@PathVariable String id) {
+    public ResponseEntity<?> refresh(@PathVariable String id,
+                                     @RequestHeader(value = "X-Delete-Token", required = false) String token) {
         if (!UUID_FORMAT.matcher(id).matches()) return ResponseEntity.badRequest().build();
-        return trackingService.refresh(id)
+        if (token == null || !UUID_FORMAT.matcher(token).matches()) return ResponseEntity.status(403).build();
+        return trackingService.refresh(id, token)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.status(403).build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> stopTracking(@PathVariable String id) {
+    public ResponseEntity<Void> stopTracking(@PathVariable String id,
+                                              @RequestHeader(value = "X-Delete-Token", required = false) String token) {
         if (!UUID_FORMAT.matcher(id).matches()) return ResponseEntity.badRequest().build();
-        boolean removed = trackingService.stopTracking(id);
-        return removed ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        if (token == null || !UUID_FORMAT.matcher(token).matches()) return ResponseEntity.status(403).build();
+        boolean removed = trackingService.stopTracking(id, token);
+        return removed ? ResponseEntity.noContent().build() : ResponseEntity.status(403).build();
     }
 }

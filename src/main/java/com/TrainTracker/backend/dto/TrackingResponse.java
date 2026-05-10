@@ -11,6 +11,7 @@ import java.util.List;
 public class TrackingResponse {
 
     private String journeyId;
+    private String deleteToken;
     private String trainNumber;
     private LocalDate date;
     private TrackingStatus status;
@@ -28,6 +29,7 @@ public class TrackingResponse {
     public static Builder builder() { return new Builder(); }
 
     public String getJourneyId() { return journeyId; }
+    public String getDeleteToken() { return deleteToken; }
     public String getTrainNumber() { return trainNumber; }
     public LocalDate getDate() { return date; }
     public TrackingStatus getStatus() { return status; }
@@ -44,6 +46,7 @@ public class TrackingResponse {
         private final TrackingResponse obj = new TrackingResponse();
 
         public Builder journeyId(String v) { obj.journeyId = v; return this; }
+        public Builder deleteToken(String v) { obj.deleteToken = v; return this; }
         public Builder trainNumber(String v) { obj.trainNumber = v; return this; }
         public Builder date(LocalDate v) { obj.date = v; return this; }
         public Builder status(TrackingStatus v) { obj.status = v; return this; }

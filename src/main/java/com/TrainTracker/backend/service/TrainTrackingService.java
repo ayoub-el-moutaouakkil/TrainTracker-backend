@@ -42,6 +42,7 @@ public class TrainTrackingService {
         if (!gtfsStatic.isLoaded()) {
             TrackedJourney loading = TrackedJourney.builder()
                     .id(UUID.randomUUID().toString())
+                    .deleteToken(UUID.randomUUID().toString())
                     .trainNumber(request.getTrainNumber())
                     .date(request.getDate())
                     .status(TrackingStatus.UNKNOWN)
@@ -49,7 +50,7 @@ public class TrainTrackingService {
                     .errorMessage("Données GTFS en cours de chargement, réessaie dans quelques secondes")
                     .build();
             journeys.put(loading.getId(), loading);
-            return toResponse(loading);
+            return toResponse(loading, true);
         }
 
         Optional<String> tripIdOpt = gtfsStatic.findTripId(request.getTrainNumber(), request.getDate());
@@ -57,6 +58,7 @@ public class TrainTrackingService {
         if (tripIdOpt.isEmpty()) {
             TrackedJourney unknown = TrackedJourney.builder()
                     .id(UUID.randomUUID().toString())
+                    .deleteToken(UUID.randomUUID().toString())
                     .trainNumber(request.getTrainNumber())
                     .date(request.getDate())
                     .status(TrackingStatus.UNKNOWN)
@@ -64,7 +66,7 @@ public class TrainTrackingService {
                     .errorMessage("Train " + request.getTrainNumber() + " introuvable le " + request.getDate())
                     .build();
             journeys.put(unknown.getId(), unknown);
-            return toResponse(unknown);
+            return toResponse(unknown, true);
         }
 
         String tripId = tripIdOpt.get();
@@ -73,6 +75,7 @@ public class TrainTrackingService {
 
         TrackedJourney journey = TrackedJourney.builder()
                 .id(UUID.randomUUID().toString())
+                .deleteToken(UUID.randomUUID().toString())
                 .trainNumber(request.getTrainNumber())
                 .date(request.getDate())
                 .vehicleJourneyId(tripId)
@@ -84,28 +87,26 @@ public class TrainTrackingService {
         journeys.put(journey.getId(), journey);
         log.info("Tracking démarré : train {} trip={} ({} arrêts)",
                 request.getTrainNumber(), tripId, stops.size());
-        return toResponse(journey);
+        return toResponse(journey, true);
     }
 
     public Optional<TrackingResponse> getTracking(String journeyId) {
         TrackedJourney journey = journeys.get(journeyId);
         if (journey == null) return Optional.empty();
-        return Optional.of(toResponse(journey));
+        return Optional.of(toResponse(journey, false));
     }
 
-    public List<TrackingResponse> getAllTracking() {
-        return journeys.values().stream().map(this::toResponse).toList();
-    }
-
-    public boolean stopTracking(String journeyId) {
+    public boolean stopTracking(String journeyId, String deleteToken) {
+        TrackedJourney journey = journeys.get(journeyId);
+        if (journey == null || !journey.getDeleteToken().equals(deleteToken)) return false;
         return journeys.remove(journeyId) != null;
     }
 
-    public Optional<TrackingResponse> refresh(String journeyId) {
+    public Optional<TrackingResponse> refresh(String journeyId, String deleteToken) {
         TrackedJourney journey = journeys.get(journeyId);
-        if (journey == null) return Optional.empty();
+        if (journey == null || !journey.getDeleteToken().equals(deleteToken)) return Optional.empty();
         refreshJourney(journey);
-        return Optional.of(toResponse(journey));
+        return Optional.of(toResponse(journey, false));
     }
 
     // ─── Rafraîchissement automatique ────────────────────────────────────────────
@@ -206,9 +207,10 @@ public class TrainTrackingService {
         return TrackingStatus.IN_PROGRESS;
     }
 
-    private TrackingResponse toResponse(TrackedJourney journey) {
+    private TrackingResponse toResponse(TrackedJourney journey, boolean includeToken) {
         TrackingResponse.Builder builder = TrackingResponse.builder()
                 .journeyId(journey.getId())
+                .deleteToken(includeToken ? journey.getDeleteToken() : null)
                 .trainNumber(journey.getTrainNumber())
                 .date(journey.getDate())
                 .status(journey.getStatus())

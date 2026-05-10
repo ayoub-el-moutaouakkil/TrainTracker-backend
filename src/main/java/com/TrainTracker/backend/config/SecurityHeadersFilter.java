@@ -22,6 +22,8 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
         res.setHeader("Referrer-Policy", "no-referrer");
         res.setHeader("Permissions-Policy", "geolocation=(), camera=(), microphone=()");
         res.setHeader("Cache-Control", "no-store");
+        res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+        res.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
         chain.doFilter(req, res);
     }
 }

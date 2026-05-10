@@ -39,7 +39,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
             timestamps.removeIf(t -> t < window);
             if (timestamps.size() >= limit) {
                 res.setStatus(429);
-                res.setContentType("application/json");
+                res.setContentType("application/json;charset=UTF-8");
+                res.setHeader("Retry-After", "60");
                 res.getWriter().write("{\"error\":\"Too Many Requests\"}");
                 res.flushBuffer();
                 return;

@@ -7,6 +7,7 @@ import java.util.List;
 public class TrackedJourney {
 
     private String id;
+    private String deleteToken;
     private String trainNumber;
     private LocalDate date;
     private String vehicleJourneyId;
@@ -20,6 +21,7 @@ public class TrackedJourney {
     public static Builder builder() { return new Builder(); }
 
     public String getId() { return id; }
+    public String getDeleteToken() { return deleteToken; }
     public String getTrainNumber() { return trainNumber; }
     public LocalDate getDate() { return date; }
     public String getVehicleJourneyId() { return vehicleJourneyId; }
@@ -37,6 +39,7 @@ public class TrackedJourney {
         private final TrackedJourney obj = new TrackedJourney();
 
         public Builder id(String v) { obj.id = v; return this; }
+        public Builder deleteToken(String v) { obj.deleteToken = v; return this; }
         public Builder trainNumber(String v) { obj.trainNumber = v; return this; }
         public Builder date(LocalDate v) { obj.date = v; return this; }
         public Builder vehicleJourneyId(String v) { obj.vehicleJourneyId = v; return this; }

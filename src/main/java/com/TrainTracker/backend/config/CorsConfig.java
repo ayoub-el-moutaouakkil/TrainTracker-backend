@@ -11,7 +11,9 @@ public class CorsConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
                 .allowedOrigins(
-                    "https://ayoub-el-moutaouakkil.github.io"
+                    "https://ayoub-el-moutaouakkil.github.io",
+                    "https://trainlive.fr",
+                    "https://www.trainlive.fr"
                 )
                 .allowedMethods("GET", "POST", "DELETE", "OPTIONS")
                 .allowedHeaders("Content-Type", "Accept", "X-Delete-Token")
